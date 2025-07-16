@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b3bcf46da93710549899e311e928f7e8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.1067257
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3bcf46da93710549899e311e928f7e8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.017813282
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3bcf46da93710549899e311e928f7e8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.3500966
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b3bcf46da93710549899e311e928f7e8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -93,11 +93,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseSpeed: 2
   boostMultiplier: 10
-  rayDistance: 0.5
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 128
   lifeTime: 60
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  reverseDirectionMask:
+    serializedVersion: 2
+    m_Bits: 1152
+  maxDistance: 15
+  boxVelocityDuration: 2
 --- !u!65 &3547368478380139727
 BoxCollider:
   m_ObjectHideFlags: 0

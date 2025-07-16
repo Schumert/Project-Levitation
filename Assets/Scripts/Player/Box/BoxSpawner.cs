@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -12,11 +13,12 @@ public class BoxSpawner : MonoBehaviour
     [SerializeField] private GameObject elevatorGhostBoxPrefab;
     [SerializeField] private int spawnOffsetX = 1;
     [SerializeField] private LayerMask obstacleLayer;
+    [SerializeField] private LayerMask groundMask;
     [SerializeField] private int maxBoxes = 3;
     [SerializeField] private float stepSize = 1;
     [SerializeField] private GameObject player;
     [SerializeField, Tooltip("Quick Spawn özelliğinin kutuyu oyuncuya göre ne kadar uzakta yaratacağı")] private Vector3 quickSpawnOffset;
-    [SerializeField, Tooltip("Bu hayalet kutunun ve asansör kutunun çıkabileceği maksimum yükseklik")] private float maxDistance = 15;
+
     private Queue<GameObject> activeBoxes = new Queue<GameObject>();
 
     private GameObject currentBox;
@@ -57,10 +59,8 @@ public class BoxSpawner : MonoBehaviour
         else if (InputManager.WasSpawnActionPressed && currentGhostBox != null)
         {
             ghostSpawnPos = currentGhostBox.transform.position;
-            if (isSpawnable(ghostSpawnPos) || isSpawnableAtOffset())
-            {
-                TrySpawnBox(ghostSpawnPos);
-            }
+            TrySpawnBox(ghostSpawnPos);
+
             Destroy(currentGhostBox);
             currentGhostBox = null;
         }
@@ -141,10 +141,10 @@ public class BoxSpawner : MonoBehaviour
     {
         if (currentBox != null) return;
 
+        BoxCollider boxCollider = elevatorBoxPrefab.GetComponent<BoxCollider>();
 
-
-
-        GameObject newBox = Instantiate(elevatorBoxPrefab, spawnPos, Quaternion.identity);
+        Vector3 updatedPos = new Vector3(0, boxCollider.bounds.extents.y + 0.05f, 0) + spawnPos;
+        GameObject newBox = Instantiate(elevatorBoxPrefab, updatedPos, Quaternion.identity);
 
 
         activeBoxes.Enqueue(newBox);
@@ -166,36 +166,13 @@ public class BoxSpawner : MonoBehaviour
         currentBox = newBox;
     }
 
-    private bool isSpawnable(Vector3 pos)
-    {
-        if (currentGhostBox == null) return false;
-
-        Vector3 checkPos = pos;
-        Collider[] hits = Physics.OverlapBox(checkPos, currentGhostBox.GetComponent<BoxCollider>().bounds.extents, Quaternion.identity, obstacleLayer, QueryTriggerInteraction.Ignore);
-        //Vector3 origin = instance.ghostSpawnPos - new Vector3(0, instance.currentGhostBox.GetComponent<BoxCollider>().bounds.extents.y);
-        if (hits.Length != 0)
-        {
-            Debug.Log("BOXSPAWNER: KUTU ENGELDEN DOLAYI YARATILAMADI!");
-            return false;
-        }
-
-
-        return true;
-
-    }
 
 
 
-    public static bool IsOutOfRange(Vector3 origin, LayerMask mask)
-    {
-        return !Physics.Raycast(origin, Vector3.down, instance.maxDistance, mask);
-    }
 
-    private bool isSpawnableAtOffset()
-    {
-        ghostSpawnPos = currentGhostBox.transform.position + new Vector3(0, 1, 0);
-        return isSpawnable(ghostSpawnPos);
-    }
+
+
+
 
 
 

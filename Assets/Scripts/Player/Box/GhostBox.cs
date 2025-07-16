@@ -7,6 +7,10 @@ public class GhostBox : MonoBehaviour
 
     private Rigidbody rb;
     private Vector2 moveValue;
+
+    [SerializeField] LayerMask obstacleMask;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -47,5 +51,7 @@ public class GhostBox : MonoBehaviour
 
 
         rb.linearVelocity = velocity;
+
+
     }
 }

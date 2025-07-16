@@ -36,7 +36,7 @@ public class DamageKnockback : MonoBehaviour
     {
         isKnockbackActive = false;
         InputManager.ActivatePlayerControls();
-        GetComponent<MovementController>().enabled = true;
+        GetComponent<MovementManager>().enabled = true;
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class DamageKnockback : MonoBehaviour
     public void HandleKnockback(GameObject damageSource)
     {
         InputManager.DeactivatePlayerControls();
-        GetComponent<MovementController>().enabled = false;
+        GetComponent<MovementManager>().enabled = false;
 
         // X ekseninde vurulduğumuz yönü hesapla
         float dir = Mathf.Sign(transform.position.x - damageSource.transform.position.x);
