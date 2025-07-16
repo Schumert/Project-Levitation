@@ -136,13 +136,7 @@ public class ElevatorBox : MonoBehaviour
 
 
 
-        if (IsTouchingReverseDirectionObjects())
-        {
-            Debug.Log("Collision'a çarptığı için kutu dönüyor ve oyuncu fırlatılıyor!");
-            ReverseDirection();
-            //LaunchPlayerIfOnTop(15f);
 
-        }
 
 
 
@@ -233,6 +227,12 @@ public class ElevatorBox : MonoBehaviour
         {
             //collision.transform.SetParent(transform);
             //print("Player kutunun üstünde.");
+        }
+        else
+        {
+            ReverseDirection();
+
+
         }
 
 
