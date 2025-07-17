@@ -9,11 +9,7 @@ public class MovementManager : MonoBehaviour
 {
 
     private IJumpResponse _jumpResponse;
-
-    [Header("Hareket Ayarları")]
-    private float moveSpeed = 5f;
-    [SerializeField] private float walkSpeed = 5f;
-    [SerializeField] private float sprintSpeed = 10f;
+    private IMovementResponse _movementResponse;
 
 
 
@@ -22,7 +18,7 @@ public class MovementManager : MonoBehaviour
     private Rigidbody rb;
     [SerializeField] private bool isFalling;
     private bool isSprinting;
-    private bool isInElevator;
+    private bool isOnElevator;
 
 
     public Vector2 moveValue { get; private set; }
@@ -30,11 +26,7 @@ public class MovementManager : MonoBehaviour
     public bool LookingRight { get; private set; }
 
     private GameObject elevator;
-    private Vector3 boxVelocity;
 
-    private Vector3 residualPlatformVelocity = Vector3.zero;
-    [SerializeField, Tooltip("Platformdan ayrıldıktan sonra etki eden velocity ne hızla düşsün")] private float platformVelocityDecayRate = 3f; // platformdan ayrıldıktan sonra etki eden velocity ne hızla düşsün
-    private bool applyResidualVelocity = false;
 
     void Awake()
     {
@@ -42,13 +34,15 @@ public class MovementManager : MonoBehaviour
         if (_jumpResponse == null)
             Debug.LogError($"[{name}] IJumpResponse bulunamadı!");
 
+        _movementResponse = GetComponent<IMovementResponse>();
+        if (_movementResponse == null)
+            Debug.LogError("IMovementResponse bulunamadı!");
+
         rb = GetComponent<Rigidbody>();
     }
 
     void Start()
     {
-
-        moveSpeed = walkSpeed;
 
         rb.useGravity = false;
     }
@@ -69,7 +63,7 @@ public class MovementManager : MonoBehaviour
             LookingRight = true;
         }
 
-        isFalling = !_jumpResponse.isGrounded && rb.linearVelocity.y < -0.1f && !isInElevator;
+        isFalling = !_jumpResponse.isGrounded && rb.linearVelocity.y < -0.1f && !isOnElevator;
 
 
 
@@ -89,14 +83,14 @@ public class MovementManager : MonoBehaviour
         // Sprint kontrolü
         if (InputManager.IsSprintHeld && Math.Abs(moveValue.x) > 0)
         {
-            moveSpeed = sprintSpeed;
             isSprinting = true;
         }
         else
         {
-            moveSpeed = walkSpeed;
             isSprinting = false;
         }
+
+        _movementResponse.SetMoveInput(moveValue, isSprinting);
 
         AnimationManager.UpdateStates(Mathf.Abs(moveValue.x), _jumpResponse.isGrounded, isFalling, isSprinting);
 
@@ -108,52 +102,7 @@ public class MovementManager : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector3 velocity = rb.linearVelocity;
-        velocity.x = moveValue.x * moveSpeed;
-
-        if (elevator != null)
-            boxVelocity = elevator.GetComponent<Rigidbody>().linearVelocity;
-
-        if (_jumpResponse.isGrounded && isInElevator && elevator != null)
-        {
-            // Platformdayken direkt velocity aktarımı
-            velocity = boxVelocity + new Vector3(moveValue.x * moveSpeed, 0, 0);
-            applyResidualVelocity = false;
-        }
-        else if (applyResidualVelocity)
-        {
-            // Ters yönde input verildiyse daha hızlı azalsın
-            bool isCounteringResidual =
-                (residualPlatformVelocity.x > 0 && moveValue.x < 0) ||
-                (residualPlatformVelocity.x < 0 && moveValue.x > 0);
-
-            float decayRate = platformVelocityDecayRate;
-            if (isCounteringResidual)
-                decayRate *= 2f;
-
-            residualPlatformVelocity = Vector3.MoveTowards(
-                residualPlatformVelocity,
-                Vector3.zero,
-                decayRate * Time.fixedDeltaTime
-            );
-
-            velocity += new Vector3(residualPlatformVelocity.x, 0f, 0f);
-
-            if (residualPlatformVelocity.magnitude <= 0.01f)
-            {
-                residualPlatformVelocity = Vector3.zero;
-                applyResidualVelocity = false;
-            }
-        }
-        else
-        {
-            velocity.x = moveValue.x * moveSpeed;
-        }
-
-
-
-
-        rb.linearVelocity = velocity;
+        _movementResponse.ApplyMovement();
     }
 
 
@@ -172,8 +121,8 @@ public class MovementManager : MonoBehaviour
 
         if (collision.gameObject.CompareTag("ElevatorBox"))
         {
-            isInElevator = true;
             elevator = collision.gameObject;
+            _movementResponse.SetPlatformState(true, elevator);
         }
 
 
@@ -184,12 +133,8 @@ public class MovementManager : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("ElevatorBox"))
         {
-            isInElevator = false;
+            _movementResponse.NotifyPlatformExit();
             elevator = null;
-
-            // Çıkarken platform hızını kaydet
-            residualPlatformVelocity = boxVelocity;
-            applyResidualVelocity = true;
         }
     }
 

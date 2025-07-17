@@ -37230,12 +37230,15 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3503600318847750380, guid: dc7ed2672252f6c4fb40d6335f5db5aa, type: 3}
       insertIndex: 2
-      addedObject: {fileID: 2051329458}
+      addedObject: {fileID: 2051329467}
     - targetCorrespondingSourceObject: {fileID: 3503600318847750380, guid: dc7ed2672252f6c4fb40d6335f5db5aa, type: 3}
       insertIndex: 3
-      addedObject: {fileID: 2051329459}
+      addedObject: {fileID: 2051329458}
     - targetCorrespondingSourceObject: {fileID: 3503600318847750380, guid: dc7ed2672252f6c4fb40d6335f5db5aa, type: 3}
       insertIndex: 4
+      addedObject: {fileID: 2051329459}
+    - targetCorrespondingSourceObject: {fileID: 3503600318847750380, guid: dc7ed2672252f6c4fb40d6335f5db5aa, type: 3}
+      insertIndex: 5
       addedObject: {fileID: 2051329460}
   m_SourcePrefab: {fileID: 100100000, guid: dc7ed2672252f6c4fb40d6335f5db5aa, type: 3}
 --- !u!1001 &1244905312
@@ -62797,6 +62800,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   customGravity: -30
+--- !u!114 &2051329467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051329453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b80cade7eeec20245b0ec1f576488b08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkSpeed: 5
+  sprintSpeed: 10
+  platformVelocityDecayRate: 8
 --- !u!1001 &2054364717
 PrefabInstance:
   m_ObjectHideFlags: 0
