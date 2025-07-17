@@ -28,9 +28,6 @@ public class ElevatorBox : MonoBehaviour
     private Rigidbody rb;
     [SerializeField, Tooltip("Bu asansör kutunun çıkabileceği maksimum yükseklik")] private float maxDistance = 15;
 
-    private Vector3 boxVelocityToAdd = Vector3.zero;
-    private float boxVelocityTimer = 0;
-    private bool isApplyingBoxVelocity = false;
     [SerializeField] private float boxVelocityDuration = 0.5f;
 
     private Vector3 previousPosition;
@@ -66,11 +63,6 @@ public class ElevatorBox : MonoBehaviour
         {
 
 
-            /*if (playerTransform != null && isBoosted)
-            {
-                LaunchPlayerIfOnTop(15f);
-            }*/
-
             ReverseDirection();
             wasOutOfRange = true;
         }
@@ -84,61 +76,6 @@ public class ElevatorBox : MonoBehaviour
 
         Velocity = (transform.position - previousPosition) / Time.fixedDeltaTime;
         previousPosition = transform.position;
-
-
-
-
-        /*if (InputManager.WasJumpPressed && playerTransform != null && math.abs(moveDirection.x) > 0)
-        {
-            boxVelocityTimer = boxVelocityDuration;
-            boxVelocityToAdd = GetCurrentVelocity();
-            isApplyingBoxVelocity = true;
-            Debug.Log("Oyuncuya hareket eden kutunun üzerinde zıpladığı için hız uygulandı!");
-        }
-
-
-        GameObject player = GameObject.FindWithTag("Player");
-        Rigidbody playerRb = player.GetComponent<Rigidbody>();
-        IJumpResponse jump = player.GetComponent<IJumpResponse>();
-
-        if (isApplyingBoxVelocity)
-        {
-            if (boxVelocityTimer > 0f)
-            {
-                // Süre boyunca velocity ekle
-                playerRb.linearVelocity += boxVelocityToAdd;
-                boxVelocityTimer -= Time.fixedDeltaTime;
-            }
-            else
-            {
-                // Azaltarak sıfırla
-                boxVelocityToAdd = Vector3.Lerp(boxVelocityToAdd, Vector3.zero, 5f * Time.fixedDeltaTime);
-                playerRb.linearVelocity += boxVelocityToAdd;
-
-                if (jump.isGrounded)
-                {
-                    boxVelocityToAdd = Vector3.Lerp(boxVelocityToAdd, Vector3.zero, 10f * Time.fixedDeltaTime);
-                }
-
-                // Eğer zemin temas ettiyse veya çok küçüldüyse kapat
-                if (jump.isGrounded && boxVelocityToAdd.magnitude < 0.1f)
-                {
-                    isApplyingBoxVelocity = false;
-                    boxVelocityToAdd = Vector3.zero;
-                }
-
-
-
-
-            }
-        }*/
-
-
-
-
-
-
-
 
 
     }

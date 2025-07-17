@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -27,8 +28,9 @@ public class BoxSpawner : MonoBehaviour
     private Vector2 moveValue;
 
     private LayerMask mask;
-
-
+    private Vector3 currentMoveDirection = Vector3.zero;
+    private bool hasGivenDirection = false;
+    private bool cancelled = false;
 
     private void Awake()
     {
@@ -45,64 +47,38 @@ public class BoxSpawner : MonoBehaviour
     {
 
 
-        if (InputManager.WasQuickSpawnActionPressed && currentGhostBox == null)
+        /*if (InputManager.WasQuickSpawnActionPressed && currentGhostBox == null)
         {
             Vector3 spawnPos = transform.position + quickSpawnOffset;
             TrySpawnBox(spawnPos); // Senin ayrı fonksiyonun varsa burayı kullan
-        }
+        }*/
 
         if (InputManager.WasSpawnActionPressed && currentGhostBox == null)
         {
 
             PlaceTheGhostBox();
         }
-        else if (InputManager.WasSpawnActionPressed && currentGhostBox != null)
+        else if (InputManager.WasSpawnActionPressed && currentGhostBox != null && currentMoveDirection != null)
         {
             ghostSpawnPos = currentGhostBox.transform.position;
-            TrySpawnBox(ghostSpawnPos);
+            StartCoroutine(TrySpawnBox(ghostSpawnPos));
+        }
 
+
+        if (Input.GetKeyDown(KeyCode.Escape) && currentGhostBox != null)
+        {
             Destroy(currentGhostBox);
             currentGhostBox = null;
         }
 
 
-        if (currentBox != null)
+
+
+
+
+        if (InputManager.WasBoostBoxActionPressed)
         {
-            ElevatorBox box = currentBox.GetComponent<ElevatorBox>();
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                box.StartMoving(Vector3.up);
-                currentBox = null;
-            }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                box.StartMoving(Vector3.down);
-                currentBox = null;
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                box.StartMoving(Vector3.left);
-                currentBox = null;
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                box.StartMoving(Vector3.right);
-                currentBox = null;
-            }
-        }
-
-
-
-
-
-
-        if (ReturnNewestBox() != null)
-        {
-            GameObject newestBox = ReturnNewestBox();
-            if (InputManager.WasBoostBoxActionPressed)
-            {
-                newestBox.GetComponent<ElevatorBox>().SetState(new BoxSpeedingState());
-            }
+            BoostClosestBoxToPlayer();
         }
     }
 
@@ -137,34 +113,112 @@ public class BoxSpawner : MonoBehaviour
         }
     }
 
-    public void TrySpawnBox(Vector3 spawnPos)
+    public IEnumerator TrySpawnBox(Vector3 spawnPos)
     {
-        if (currentBox != null) return;
+        yield return StartCoroutine(GiveDirectionBeforeSpawn());
+
+        if (cancelled)
+        {
+            Debug.Log("Spawn işlemi iptal edildi.");
+            Destroy(currentGhostBox);
+            currentGhostBox = null;
+            yield break;
+        }
 
         BoxCollider boxCollider = elevatorBoxPrefab.GetComponent<BoxCollider>();
-
         Vector3 updatedPos = new Vector3(0, boxCollider.bounds.extents.y + 0.05f, 0) + spawnPos;
+
         GameObject newBox = Instantiate(elevatorBoxPrefab, updatedPos, Quaternion.identity);
-
-
         activeBoxes.Enqueue(newBox);
-
 
         if (activeBoxes.Count > maxBoxes)
         {
             GameObject oldestBox = activeBoxes.Dequeue();
             if (oldestBox != null)
             {
-                player.transform.SetParent(null); // Oyuncuyu ayır
-
                 Destroy(oldestBox);
             }
-
-
         }
 
+        ElevatorBox elevatorBox = newBox.GetComponent<ElevatorBox>();
+        elevatorBox.StartMoving(currentMoveDirection);
+
         currentBox = newBox;
+        currentMoveDirection = Vector3.zero;
+        Destroy(currentGhostBox);
+        currentGhostBox = null;
+        currentBox = null;
     }
+
+    private IEnumerator GiveDirectionBeforeSpawn()
+    {
+        hasGivenDirection = false;
+        cancelled = false;
+
+        while (!hasGivenDirection && !cancelled)
+        {
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                currentMoveDirection = Vector3.up;
+                hasGivenDirection = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                currentMoveDirection = Vector3.down;
+                hasGivenDirection = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                currentMoveDirection = Vector3.left;
+                hasGivenDirection = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                currentMoveDirection = Vector3.right;
+                hasGivenDirection = true;
+            }
+            else if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                cancelled = true;
+            }
+
+            yield return null; // Bir sonraki frame'e kadar bekle
+        }
+    }
+
+
+    private void BoostClosestBoxToPlayer()
+    {
+        if (activeBoxes.Count == 0) return;
+
+        GameObject closestBox = null;
+        float minDistance = Mathf.Infinity;
+        Vector3 playerPos = player.transform.position;
+
+        foreach (GameObject box in activeBoxes)
+        {
+            if (box == null) continue;
+
+            float distance = Vector3.Distance(playerPos, box.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestBox = box;
+            }
+        }
+
+        if (closestBox != null)
+        {
+            ElevatorBox elevatorBox = closestBox.GetComponent<ElevatorBox>();
+            if (elevatorBox != null)
+            {
+                elevatorBox.SetState(new BoxSpeedingState());
+                Debug.Log("Boosted box: " + closestBox.name);
+            }
+        }
+    }
+
+
 
 
 
