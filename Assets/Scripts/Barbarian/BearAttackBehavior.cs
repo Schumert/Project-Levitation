@@ -115,12 +115,14 @@ public class BearAttackBehavior : IAttackBehavior
         }
         else if (collision.collider.GetComponent<IDamageable>() is IDamageable dmgTarget)
         {
-            Debug.Log("Bear attack hit damageable target, dealing damage");
             dmgTarget.TakeDamage(damage);
-            if (collision.collider.GetComponent<DamageKnockback>() is DamageKnockback knckTarget)
+
+            // Artık StartCoroutine burada yok, TriggerKnockback çağırıyoruz:
+            if (collision.collider.TryGetComponent<DamageKnockback>(out var kn))
             {
-                knckTarget.HandleKnockback(owner.gameObject);
+                kn.TriggerKnockback(owner.gameObject);
             }
+
             owner.OnAttackComplete();
         }
         else if ((owner.getGroundMask().value & (1 << layer)) == 0)

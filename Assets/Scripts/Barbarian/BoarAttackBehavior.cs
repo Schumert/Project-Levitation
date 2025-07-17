@@ -92,9 +92,9 @@ public class BoarAttackBehavior : IAttackBehavior
 
             Debug.Log("Boar attack hit damageable target, dealing damage");
 
-            if (collision.collider.GetComponent<DamageKnockback>() is DamageKnockback knckTarget)
+            if (collision.collider.TryGetComponent<DamageKnockback>(out var kn))
             {
-                knckTarget.HandleKnockback(owner.gameObject);
+                kn.TriggerKnockback(owner.gameObject);
             }
 
             owner.OnAttackComplete();

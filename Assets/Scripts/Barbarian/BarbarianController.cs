@@ -114,14 +114,6 @@ public class BarbarianController : MonoBehaviour
         {
             // Handle stun-phase damage
             Debug.Log("Stun-phase collision with ElevatorBox");
-            foreach (Transform child in collision.collider.transform)
-            {
-                if (child.CompareTag("Player"))
-                {
-                    child.SetParent(null);
-                    break;
-                }
-            }
             Destroy(collision.collider.gameObject);
             Debug.Log("Damage event in stun-phase");
             TakeDamage(1);
